@@ -78,6 +78,14 @@ struct CommandLineOptions {
     )]
     runtime_class_names: Vec<String>,
 
+    #[clap(
+        long,
+        help = "Path to the layers cache file. This file is used to store the layers cache information. The default value is ./layers-cache.json.",
+        default_missing_value = "./layers-cache.json",
+        require_equals = true
+    )]
+    layers_cache_file_path: Option<String>,
+
     #[clap(short, long, help = "Print version information and exit")]
     version: bool,
 }
@@ -97,12 +105,20 @@ pub struct Config {
     pub raw_out: bool,
     pub base64_out: bool,
     pub containerd_socket_path: Option<String>,
+    pub layers_cache_file_path: Option<String>,
     pub version: bool,
 }
 
 impl Config {
     pub fn new() -> Self {
         let args = CommandLineOptions::parse();
+
+        let mut layers_cache_file_path = args.layers_cache_file_path;
+        // preserve backwards compatibility for only using the `use_cached_files` flag
+        if args.use_cached_files && layers_cache_file_path.is_none() {
+            layers_cache_file_path = Some(String::from("./layers-cache.json"));
+        }
+
         Self {
             use_cache: args.use_cached_files,
             runtime_class_names: args.runtime_class_names,
@@ -114,6 +130,7 @@ impl Config {
             raw_out: args.raw_out,
             base64_out: args.base64_out,
             containerd_socket_path: args.containerd_socket_path,
+            layers_cache_file_path: layers_cache_file_path,
             version: args.version,
         }
     }

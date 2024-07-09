@@ -72,6 +72,12 @@ struct CommandLineOptions {
     )]
     containerd_socket_path: Option<String>,
 
+    #[clap(
+        long,
+        help = "If specified, resources that have a runtimeClassName field defined will only receive a policy if the parameter is a prefix one of the given runtime class names."
+    )]
+    runtime_class_names: Vec<String>,
+
     #[clap(short, long, help = "Print version information and exit")]
     version: bool,
 }
@@ -80,6 +86,7 @@ struct CommandLineOptions {
 #[derive(Clone, Debug)]
 pub struct Config {
     pub use_cache: bool,
+    pub runtime_class_names: Vec<String>,
 
     pub yaml_file: Option<String>,
     pub rego_rules_path: String,
@@ -98,6 +105,7 @@ impl Config {
         let args = CommandLineOptions::parse();
         Self {
             use_cache: args.use_cached_files,
+            runtime_class_names: args.runtime_class_names,
             yaml_file: args.yaml_file,
             rego_rules_path: args.rego_rules_path,
             json_settings_path: args.json_settings_path,
